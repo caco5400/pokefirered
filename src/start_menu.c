@@ -45,7 +45,7 @@ enum StartMenuOption
     STARTMENU_PLAYER,
     STARTMENU_SAVE,
     STARTMENU_OPTION,
-    STARTMENU_EXIT,
+    // STARTMENU_EXIT,
     STARTMENU_RETIRE,
     STARTMENU_PLAYER2,
     MAX_STARTMENU_ITEMS
@@ -66,6 +66,8 @@ static EWRAM_DATA u8 sStartMenuOrder[MAX_STARTMENU_ITEMS] = {};
 static EWRAM_DATA s8 sDrawStartMenuState[2] = {};
 static EWRAM_DATA u8 sSafariZoneStatsWindowId = 0;
 static ALIGNED(4) EWRAM_DATA u8 sSaveStatsWindowId = 0;
+
+static EWRAM_DATA u8 sStartMenuSpritesId[MAX_STARTMENU_ITEMS]= {};
 
 static u8 (*sSaveDialogCB)(void);
 static u8 sSaveDialogDelay;
@@ -119,7 +121,7 @@ static const struct MenuAction sStartMenuActionTable[] = {
     { gText_MenuPlayer, {.u8_void = StartMenuPlayerCallback} },
     { gText_MenuSave, {.u8_void = StartMenuSaveCallback} },
     { gText_MenuOption, {.u8_void = StartMenuOptionCallback} },
-    { gText_MenuExit, {.u8_void = StartMenuExitCallback} },
+    // { gText_MenuExit, {.u8_void = StartMenuExitCallback} },
     { gText_MenuRetire, {.u8_void = StartMenuSafariZoneRetireCallback} },
     { gText_MenuPlayer, {.u8_void = StartMenuLinkPlayerCallback} }
 };
@@ -141,7 +143,7 @@ static const u8 *const sStartMenuDescPointers[] = {
     gStartMenuDesc_Player,
     gStartMenuDesc_Save,
     gStartMenuDesc_Option,
-    gStartMenuDesc_Exit,
+    // gStartMenuDesc_Exit,
     gStartMenuDesc_Retire,
     gStartMenuDesc_Player
 };
@@ -212,7 +214,7 @@ static void SetUpStartMenu_NormalField(void)
     AppendToStartMenuItems(STARTMENU_PLAYER);
     AppendToStartMenuItems(STARTMENU_SAVE);
     AppendToStartMenuItems(STARTMENU_OPTION);
-    AppendToStartMenuItems(STARTMENU_EXIT);
+    // AppendToStartMenuItems(STARTMENU_EXIT);
 }
 
 static void SetUpStartMenu_SafariZone(void)
@@ -223,7 +225,7 @@ static void SetUpStartMenu_SafariZone(void)
     AppendToStartMenuItems(STARTMENU_BAG);
     AppendToStartMenuItems(STARTMENU_PLAYER);
     AppendToStartMenuItems(STARTMENU_OPTION);
-    AppendToStartMenuItems(STARTMENU_EXIT);
+    // AppendToStartMenuItems(STARTMENU_EXIT);
 }
 
 static void SetUpStartMenu_Link(void)
@@ -232,7 +234,7 @@ static void SetUpStartMenu_Link(void)
     AppendToStartMenuItems(STARTMENU_BAG);
     AppendToStartMenuItems(STARTMENU_PLAYER2);
     AppendToStartMenuItems(STARTMENU_OPTION);
-    AppendToStartMenuItems(STARTMENU_EXIT);
+    // AppendToStartMenuItems(STARTMENU_EXIT);
 }
 
 static void SetUpStartMenu_UnionRoom(void)
@@ -241,7 +243,7 @@ static void SetUpStartMenu_UnionRoom(void)
     AppendToStartMenuItems(STARTMENU_BAG);
     AppendToStartMenuItems(STARTMENU_PLAYER);
     AppendToStartMenuItems(STARTMENU_OPTION);
-    AppendToStartMenuItems(STARTMENU_EXIT);
+    // AppendToStartMenuItems(STARTMENU_EXIT);
 }
 
 static void DrawSafariZoneStatsWindow(void)
@@ -292,6 +294,171 @@ static s8 PrintStartMenuItems(s8 *cursor_p, u8 nitems)
     return FALSE;
 }
 
+//**************************************************************
+//ICONS START MENU
+//**************************************************************
+
+#define TAG_ICONS_MENU 0x3333
+
+#define MENU_POS_RIGHT TRUE //Change the position of menu to right or left of the screen
+
+#define INITIAL_POS_RIGHT_X 232 
+#define INITIAL_POS_LEFT_X 8 
+
+static const u16 sIconsMenuPal[] = INCBIN_U16("graphics/start_menu/menuIconPal.gbapal");
+static const u8 sIconMenuSprites[] = INCBIN_U8("graphics/start_menu/iconMenu.4bpp");
+
+static const struct OamData gSpriteOamData32 =
+{
+    .y = 0,
+    .affineMode = 0,
+    .objMode = 0, 
+    .mosaic = 0, 
+    .bpp = 0,
+    .shape = 0, 
+    .x = 0, 
+    .matrixNum = 0,
+    .size = SPRITE_SIZE(32x32),
+    .tileNum = 0,
+    .priority = 0, 
+    .paletteNum = 0, 
+    .affineParam = 0, 
+};
+
+
+static const struct SpriteSheet spriteSheetIconsMenu =
+{
+            .data = sIconMenuSprites, //GRÁFICO ----------
+            .size = 3584, //TAMAÑO DEL GRÁFICO
+            .tag = TAG_ICONS_MENU, //LUGAR DONDE SE CARGA EL GRÁFICO ----------
+};
+static const struct SpritePalette spritePaletteIconsMenu =
+{
+            .data = sIconsMenuPal,
+            .tag = TAG_ICONS_MENU, //LUGAR DONDE SE CARGA LA PALETA ----------
+};
+
+static const union AnimCmd sAnimDex[] =
+{
+    ANIMCMD_FRAME(0, 0),
+    ANIMCMD_END,
+};
+
+
+static const union AnimCmd sAnimBall[] =
+{
+    ANIMCMD_FRAME(16, 0),
+    ANIMCMD_END,
+};
+
+static const union AnimCmd sAnimBag[] =
+{
+    ANIMCMD_FRAME(32, 0),
+    ANIMCMD_END,
+};
+
+static const union AnimCmd sAnimCard[] =
+{
+    ANIMCMD_FRAME(48, 0),
+    ANIMCMD_END,
+};
+
+static const union AnimCmd sAnimSave[] =
+{
+    ANIMCMD_FRAME(64, 0),
+    ANIMCMD_END,
+};
+
+static const union AnimCmd sAnimOption[] =
+{
+    ANIMCMD_FRAME(80, 0),
+    ANIMCMD_END,
+};
+
+static const union AnimCmd sAnimRetire[] =
+{
+    ANIMCMD_FRAME(96, 0),
+    ANIMCMD_END,
+};
+
+
+static const union AnimCmd *const sAnimsIconMenu[] =
+{
+    [STARTMENU_POKEDEX] = sAnimDex,
+    [STARTMENU_POKEMON] = sAnimBall,
+    [STARTMENU_BAG] = sAnimBag,
+    [STARTMENU_PLAYER] = sAnimCard,
+    [STARTMENU_SAVE] = sAnimSave,
+    [STARTMENU_OPTION] = sAnimOption,
+    [STARTMENU_RETIRE] = sAnimRetire,
+};
+
+static const struct SpriteTemplate spriteTemplateIconsMenu =
+{
+    .tileTag = TAG_ICONS_MENU, //LUGAR DONDE SE CARGA EL GRÁFICO ----------
+    .paletteTag = TAG_ICONS_MENU, //LUGAR DONDE SE CARGA LA PALETA ----------
+    .oam = &gSpriteOamData32, //OAM DATA DEL ICONO ----------
+    .anims = sAnimsIconMenu, //TABLA DE ANIMACIÓN DEL ICONO ---------- 
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable, 
+    .callback = SpriteCallbackDummy, //ANIMACIÓN DEL ICONO ----------
+};
+
+static void MoveSelectSpriteIcon()
+{
+    u8 initialPos = (MENU_POS_RIGHT) ? INITIAL_POS_RIGHT_X : INITIAL_POS_LEFT_X;
+
+    if(gSprites[sStartMenuSpritesId[sStartMenuCursorPos]].x != initialPos)
+    {
+        if(MENU_POS_RIGHT)
+            gSprites[sStartMenuSpritesId[sStartMenuCursorPos]].x += initialPos - gSprites[sStartMenuSpritesId[sStartMenuCursorPos]].x;
+        else
+            gSprites[sStartMenuSpritesId[sStartMenuCursorPos]].x = initialPos;
+    }else{
+        if(MENU_POS_RIGHT)
+            gSprites[sStartMenuSpritesId[sStartMenuCursorPos]].x -= 8;
+        else
+            gSprites[sStartMenuSpritesId[sStartMenuCursorPos]].x +=8;
+    }
+}
+void LoadSpriteIconMenu()
+{
+    s8 i;
+    u8 id;
+    u8 y = 14;
+    u8 x = (MENU_POS_RIGHT) ? INITIAL_POS_RIGHT_X : INITIAL_POS_LEFT_X;
+    
+    LoadSpriteSheet(&spriteSheetIconsMenu);
+    LoadSpritePalette(&spritePaletteIconsMenu);
+
+    for (i = 0; i < sNumStartMenuItems; i++)
+    {
+        id = CreateSprite(&spriteTemplateIconsMenu, x, y, 0);
+        StartSpriteAnim(&gSprites[id], sStartMenuOrder[i]);
+        y += 26;
+        sStartMenuSpritesId[i] = id;
+
+        if(!MENU_POS_RIGHT)
+            gSprites[id].hFlip = TRUE;
+    }
+}
+
+void DestroySpriteIconsMenu()
+{
+    s8 i;
+
+    for (i = 0; i < sNumStartMenuItems; i++)
+    {
+        DestroySprite(&gSprites[sStartMenuSpritesId[i]]);
+    }
+    FreeSpriteTilesByTag(TAG_ICONS_MENU);
+    FreeSpritePaletteByTag(TAG_ICONS_MENU);
+}
+
+//**************************************************************
+//**************************************************************
+
+
 static s8 DoDrawStartMenu(void)
 {
     switch (sDrawStartMenuState[0])
@@ -305,7 +472,7 @@ static s8 DoDrawStartMenu(void)
         break;
     case 2:
         LoadStdWindowFrameGfx();
-        DrawStdWindowFrame(CreateStartMenuWindow(sNumStartMenuItems), FALSE);
+        // DrawStdWindowFrame(CreateStartMenuWindow(sNumStartMenuItems), FALSE);
         sDrawStartMenuState[0]++;
         break;
     case 3:
@@ -314,16 +481,18 @@ static s8 DoDrawStartMenu(void)
         sDrawStartMenuState[0]++;
         break;
     case 4:
-        if (PrintStartMenuItems(&sDrawStartMenuState[1], 2) == TRUE)
+        // if (PrintStartMenuItems(&sDrawStartMenuState[1], 2) == TRUE)
+            LoadSpriteIconMenu();
             sDrawStartMenuState[0]++;
         break;
     case 5:
-        sStartMenuCursorPos = Menu_InitCursor(GetStartMenuWindowId(), FONT_NORMAL, 0, 0, 15, sNumStartMenuItems, sStartMenuCursorPos);
-        if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
-        {
-            DrawHelpMessageWindowWithText(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]]);
-        }
-        CopyWindowToVram(GetStartMenuWindowId(), COPYWIN_MAP);
+        MoveSelectSpriteIcon();
+        // sStartMenuCursorPos = Menu_InitCursor(GetStartMenuWindowId(), FONT_NORMAL, 0, 0, 15, sNumStartMenuItems, sStartMenuCursorPos);
+        // if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
+        // {
+        //     DrawHelpMessageWindowWithText(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]]);
+        // }
+        // CopyWindowToVram(GetStartMenuWindowId(), COPYWIN_MAP);
         return TRUE;
     }
     return FALSE;
@@ -402,24 +571,36 @@ static bool8 StartCB_HandleInput(void)
     if (JOY_NEW(DPAD_UP))
     {
         PlaySE(SE_SELECT);
-        sStartMenuCursorPos = Menu_MoveCursor(-1);
-        if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
+        if(sStartMenuCursorPos > 0)
         {
-            PrintTextOnHelpMessageWindow(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]], 2);
+            MoveSelectSpriteIcon();
+            sStartMenuCursorPos -= 1;
+            MoveSelectSpriteIcon();
         }
+        // sStartMenuCursorPos = Menu_MoveCursor(-1);
+        // if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
+        // {
+        //     PrintTextOnHelpMessageWindow(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]], 2);
+        // }
     }
     if (JOY_NEW(DPAD_DOWN))
     {
         PlaySE(SE_SELECT);
-        sStartMenuCursorPos = Menu_MoveCursor(+1);
-        if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
-        {
-            PrintTextOnHelpMessageWindow(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]], 2);
+        if(sStartMenuCursorPos < sNumStartMenuItems - 1 ){
+            MoveSelectSpriteIcon();
+            sStartMenuCursorPos += 1;
+            MoveSelectSpriteIcon();
         }
+        // sStartMenuCursorPos = Menu_MoveCursor(+1);
+        // if (!MenuHelpers_IsLinkActive() && InUnionRoom() != TRUE && gSaveBlock2Ptr->optionsButtonMode == OPTIONS_BUTTON_MODE_HELP)
+        // {
+        //     PrintTextOnHelpMessageWindow(sStartMenuDescPointers[sStartMenuOrder[sStartMenuCursorPos]], 2);
+        // }
     }
     if (JOY_NEW(A_BUTTON))
     {
         PlaySE(SE_SELECT);
+        DestroySpriteIconsMenu();
         if (!StartMenuPokedexSanityCheck())
             return FALSE;
         sStartMenuCallback = sStartMenuActionTable[sStartMenuOrder[sStartMenuCursorPos]].func.u8_void;
@@ -701,7 +882,7 @@ static bool8 SaveDialog_Wait60FramesThenCheckAButtonHeld(void)
 static u8 SaveDialogCB_PrintAskSaveText(void)
 {
     ClearStdWindowAndFrame(GetStartMenuWindowId(), FALSE);
-    RemoveStartMenuWindow();
+    // RemoveStartMenuWindow();
     DestroyHelpMessageWindow(0);
     PrintSaveStats();
     PrintSaveTextWithFollowupFunc(gText_WouldYouLikeToSaveTheGame, SaveDialogCB_AskSavePrintYesNoMenu);
@@ -993,7 +1174,8 @@ static void CloseStartMenu(void)
 {
     PlaySE(SE_SELECT);
     ClearStdWindowAndFrame(GetStartMenuWindowId(), TRUE);
-    RemoveStartMenuWindow();
+    // RemoveStartMenuWindow();
+    DestroySpriteIconsMenu();
     ClearPlayerHeldMovementAndUnfreezeObjectEvents();
     UnlockPlayerFieldControls();
 }
